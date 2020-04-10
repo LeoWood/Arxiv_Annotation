@@ -76,7 +76,7 @@ def predict_move_masked_sentence_model(text):
         cla = {'0': 'Objective', '1': 'Methods', '2': 'Results', '3': 'Conclusions', '4': 'Background'}
         i = 0
         for a in results:
-            print('<<' + cla[str(a.index(max(a)))] + '>> ' + sentences[i])
+            # print('<<' + cla[str(a.index(max(a)))] + '>> ' + sentences[i])
             i += 1
         zhuanyi_sens = []
         for sen in sentences:

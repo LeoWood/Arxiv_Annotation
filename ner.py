@@ -78,7 +78,8 @@ def DbpediaResults(txt):
                         dp_dict[a['surfaceForm']] = c.split(':')[1].upper()
                         break
     except:
-        print('no dbpedia results')
+        # print('no dbpedia results')
+        pass
     # print('dp ', time.time() - t1)
     # print('dp end')
     return dp_dict
@@ -166,7 +167,7 @@ def anotation_color(txt, ano_dict):
     return new_word_list
 
 
-def anotation_ner(text):
+def annotation_ner(text):
     ano_dict = {}
     st_dict = StanfordResults(text)
     dp_dict = DbpediaResults(text)
@@ -200,7 +201,7 @@ def anotation_ner(text):
     # # gate标注结果
     # for key, value in gate_dict.items():
     #     ano_dict[key] = value
-    print(ano_dict)
+    # print(ano_dict)
     # html ='<p style="text-align:justify;"><div class="entities" style="line-height: 2.5;text-align:justify;">' + ' '.join(anotation_color(text,ano_dict)) + '</div></p>'
     # for key, value in ano_dict.items():
     #     if key != '\n':

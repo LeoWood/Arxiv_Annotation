@@ -13,8 +13,8 @@ import numpy as np
 from .utils_ner import convert_examples_to_features, get_first_category, read_examples_from_list,get_second_category
 # from tst import text_to_word_list, split_zh_en
 import pymssql
-import logging
-logging.basicConfig(level=logging.INFO)
+# import logging
+# logging.basicConfig(level=logging.INFO)
 conn = pymssql.connect('159.226.125.180', 'monitor', 'Monitor@6320', 'arxiv_physics_article')
 cursor = conn.cursor()
 
@@ -50,8 +50,8 @@ word_list = []
 def load_and_cache_examples_first(text):
     global word_list
     word_list = text.split()
-    print(word_list)
-    print(len(word_list))
+    # print(word_list)
+    # print(len(word_list))
     examples = read_examples_from_list(word_list)
     features = convert_examples_to_features(examples, first_category_label, MAX_SEQ_LENGTH, tokenizer,
                                             cls_token_at_end=bool(MODEL_TYPE in ["xlnet"]),
@@ -80,8 +80,8 @@ def load_and_cache_examples_first(text):
 def load_and_cache_examples_second(text):
     global word_list
     word_list = text.split()
-    print(word_list)
-    print(len(word_list))
+    # print(word_list)
+    # print(len(word_list))
     examples = read_examples_from_list(word_list)
     features = convert_examples_to_features(examples, second_category_label, MAX_SEQ_LENGTH, tokenizer,
                                             cls_token_at_end=bool(MODEL_TYPE in ["xlnet"]),
@@ -120,7 +120,7 @@ def predict_first_catagory(text,need_to_find_first):
     preds = None
     out_label_ids = None
     model1.eval()
-    for batch in tqdm(eval_dataloader, desc="Evaluating"):
+    for batch in eval_dataloader:
         batch = tuple(t.to(DEVICE) for t in batch)
 
         with torch.no_grad():
@@ -159,8 +159,8 @@ def predict_first_catagory(text,need_to_find_first):
 
     # print(out_label_list)
     # print(len(out_label_list[0]))
-    print(preds_list)
-    print(len(preds_list[0]))
+    # print(preds_list)
+    # print(len(preds_list[0]))
 
 
     # word_list = ['目', '的', ' ', '探', '讨', '经', '皮', '内', '镜', '椎', '间', '孔', '入', '路', '微', '创', '治', '疗']
@@ -179,7 +179,7 @@ def predict_first_catagory(text,need_to_find_first):
                 else:
                     break
             all_keys.append([str_.join(keys), token.split('-')[-1]])
-    print(all_keys)
+    # print(all_keys)
     #####去除重复的
     del_elements_index = []
     for j, kk in enumerate(all_keys):
@@ -216,7 +216,7 @@ def predict_second_category(text):
     preds = None
     out_label_ids = None
     model2.eval()
-    for batch in tqdm(eval_dataloader, desc="Evaluating"):
+    for batch in eval_dataloader:
         batch = tuple(t.to(DEVICE) for t in batch)
 
         with torch.no_grad():
@@ -255,8 +255,8 @@ def predict_second_category(text):
 
     # print(out_label_list)
     # print(len(out_label_list[0]))
-    print(preds_list)
-    print(len(preds_list[0]))
+    # print(preds_list)
+    # print(len(preds_list[0]))
 
 
     # word_list = ['目', '的', ' ', '探', '讨', '经', '皮', '内', '镜', '椎', '间', '孔', '入', '路', '微', '创', '治', '疗']
@@ -276,7 +276,7 @@ def predict_second_category(text):
                 else:
                     break
             all_keys.append([str_.join(keys), token.split('-')[-1]])
-    print(all_keys)
+    # print(all_keys)
     #####去除重复的
     del_elements_index = []
     for j, kk in enumerate(all_keys):
@@ -315,7 +315,7 @@ def predict_second_category(text):
 
     all_keys=[[i[0],i[2],i[3]] for i in all_keys]
 
-    print(all_keys)
+    # print(all_keys)
     anno = {}
     for i in all_keys:
         anno[i[0]] = i[2] + ',' + i[1]

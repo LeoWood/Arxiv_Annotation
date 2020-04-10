@@ -9,8 +9,9 @@ import pymssql
 import pandas as pd
 import numpy as np
 import json
+import time
 
-import tqdm
+from tqdm import tqdm
 import spacy
 nlp = spacy.load("en_core_sci_sm")
 
@@ -70,23 +71,38 @@ def csv_to_sql(data,db_server,db_server_sw):
     # 获取数据库当前最大id
     sql = "select paperId from paper order by paperId desc"
     df = db_server.read_sql(sql)
-    paperId = df.iloc[0]['paperId']
+    if not len(df):
+        paperId = 0
+    else:
+        paperId = df.iloc[0]['paperId']
 
     sql = "select sentenceId from sentence order by sentenceId desc"
     df = db_server.read_sql(sql)
-    sentenceId = df.iloc[0]['sentenceId']
+    if not len(df):
+        sentenceId = 0
+    else:
+        sentenceId = df.iloc[0]['sentenceId']
 
     sql = "select termId from term order by termId desc"
     df = db_server.read_sql(sql)
-    termId = df.iloc[0]['termId']
+    if not len(df):
+        termId = 0
+    else:
+        termId = df.iloc[0]['termId']
 
     sql = "select relationId from relation order by relationId desc"
     df = db_server.read_sql(sql)
-    relationId = df.iloc[0]['relationId']
+    if not len(df):
+        relationId = 0
+    else:
+        relationId = df.iloc[0]['relationId']
 
     sql = "select entityId from entity order by entityId desc"
     df = db_server.read_sql(sql)
-    entityId = df.iloc[0]['entityId']
+    if not len(df):
+        entityId = 0
+    else:
+        entityId = df.iloc[0]['entityId']
 
     # 获取termType映射
     termType = {}
@@ -109,7 +125,7 @@ def csv_to_sql(data,db_server,db_server_sw):
     # 获取本地术语表
     a = []
     term_dict = {}
-    with open('../data/keywords_all(new)(modified).txt', 'r', encoding='utf-8') as f:
+    with open('keywords_all(new)(modified).txt', 'r', encoding='utf-8') as f:
         for line in f.readlines():
             line = line.strip()
             a.append(line)
@@ -117,7 +133,7 @@ def csv_to_sql(data,db_server,db_server_sw):
 
     max_num = max([len(lines.split(' ')) for lines in a])
 
-    for i in range(len(data)):
+    for i in tqdm(range(len(data))):
         this_abst = data.iloc[i]['abstracts']
         ## 插入paper表
         paperId += 1
@@ -126,13 +142,17 @@ def csv_to_sql(data,db_server,db_server_sw):
         row.append(data.iloc[i]['title'].replace("'", "''"))
         row.append(this_abst.replace("'", "''"))
         row.append(data.iloc[i]['authors'].replace("'", "''"))
-        row.append(data.iloc[i]['csoaid'])
+        row.append(str(data.iloc[i]['csoaid']))
         row.append(data.iloc[i]['createtime'])
         row.append(data.iloc[i]['subjects'])
+        if len(this_abst) > 1000:
+            row.append(1)
+        else:
+            row.append(0)
         row.append(data.iloc[i]['createtime'])
         row = tuple(row)
-        sql = "INSERT INTO paper VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % row
-        print(sql)
+        sql = "INSERT INTO paper VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s', %d, '%s')" % row
+        # print(sql)
         db_server.write_sql(sql)
 
         ## scienceWise插入term表
@@ -156,9 +176,10 @@ def csv_to_sql(data,db_server,db_server_sw):
                     row.append(value.split(',')[0])
                     row.append(value.split(',')[1])
                     row = tuple(row)
-                    sql = "INSERT INTO termType VALUES (%d, %s, %s)", row
+                    sql = "INSERT INTO termType VALUES (%d, '%s', '%s')" % row
                     print(sql)
                     db_server.write_sql(sql)
+                    termType[value] = max_termTypeId + 1
                 ## 写入term表
                 term['termTypeId'] = termType[value]
                 term['isScienceWise'] = 1
@@ -167,14 +188,15 @@ def csv_to_sql(data,db_server,db_server_sw):
                     row.append(term[field])
                 row = tuple(row)
                 sql = "INSERT INTO term VALUES (%d, %d, %d, '%s', %d, %d)" % row
-                print(sql)
+                # print(sql)
                 db_server.write_sql(sql)
 
                 # scienceWise插入relation表
 
-                sql1 = "select incoming_concept,incoming_relation,category from sw_incoming_relation where incoming_concept='%s'" % key
+                sql1 = "select incoming_concept,incoming_relation,category from sw_incoming_relation where incoming_concept='%s'" % key.replace("'", "''")
+                # print(key)
                 df1 = db_server_sw.read_sql(sql1)
-                sql2 = "select category,outgoing_relation,outgoing_concept from sw_outgoing_relation where outgoing_concept='%s'" % key
+                sql2 = "select category,outgoing_relation,outgoing_concept from sw_outgoing_relation where outgoing_concept='%s'" % key.replace("'", "''")
                 df2 = db_server_sw.read_sql(sql2)
                 if len(df1):
                     for j in range(len(df1)):
@@ -194,7 +216,7 @@ def csv_to_sql(data,db_server,db_server_sw):
                             row.append(relation[field])
                         row = tuple(row)
                         sql = "INSERT INTO relation VALUES (%d, %d, %d, '%s','%s','%s', %d, %d)" % row
-                        print(sql)
+                        # print(sql)
                         db_server.write_sql(sql)
                 if len(df2):
                     for j in range(len(df2)):
@@ -214,7 +236,7 @@ def csv_to_sql(data,db_server,db_server_sw):
                             row.append(relation[field])
                         row = tuple(row)
                         sql = "INSERT INTO relation VALUES (%d, %d, %d, '%s','%s','%s', %d, %d)" % row
-                        print(sql)
+                        # print(sql)
                         db_server.write_sql(sql)
 
         ## 当前paper插入sentences表
@@ -234,10 +256,10 @@ def csv_to_sql(data,db_server,db_server_sw):
             sentenceId += 1
             sentence['sentenceId'] = sentenceId
             sentence['paperId'] = paperId
-            sentence['moveTypeId'] = move_labels[i]
+            sentence['moveTypeId'] = move_labels[j]
             sentence['sentenceOrder'] = j + 1
             sentence['detail'] = sen.replace("'", "''")
-            sentence['subject'], sentence['predicate'], sentence['object'] = spo_relation(sen)
+            sentence['subject'], sentence['predicate'], sentence['object'] = spo_relation(sen,nlp)
             sentence['subject'] = sentence['subject'].replace("'", "''")
             sentence['predicate'] = sentence['predicate'].replace("'", "''")
             sentence['object'] = sentence['object'].replace("'", "''")
@@ -246,10 +268,13 @@ def csv_to_sql(data,db_server,db_server_sw):
             row = []
             for field in ['sentenceId', 'paperId', 'moveTypeId', 'sentenceOrder', 'detail', 'subject', 'object','predicate', 'isDefinition']:
                 row.append(sentence[field])
+            row = tuple(row)
 
             sql = "INSERT INTO sentence VALUES (%d, %d, %d, %d, '%s', '%s', '%s', '%s', %d)" % row
-            print(sql)
+            # print(sql)
             db_server.write_sql(sql)
+
+            j += 1
 
             # 每一句的term抽取
             terms = set(max_match(sen, term_dict, max_num))
@@ -268,12 +293,12 @@ def csv_to_sql(data,db_server,db_server_sw):
                     row.append(term[field])
                 row = tuple(row)
                 sql = "INSERT INTO term VALUES (%d, %d, %d, '%s', %d, %d)" % row
-                print(sql)
+                # print(sql)
                 db_server.write_sql(sql)
 
             # 每一句relation抽取
             # 依存关系
-            deps = dep_relation(terms, sen)
+            deps = dep_relation(terms, sen, nlp)
             for dep in deps:
                 if dep[2] in dep_dict.keys():
                     relation = {}
@@ -301,7 +326,7 @@ def csv_to_sql(data,db_server,db_server_sw):
                     row = tuple(row)
                     # print(row)
                     sql = "INSERT INTO relation VALUES (%d, %d, %d, '%s','%s','%s', %d, %d)" % row
-                    print(sql)
+                    # print(sql)
                     db_server.write_sql(sql)
 
             # 共现关系
@@ -325,7 +350,7 @@ def csv_to_sql(data,db_server,db_server_sw):
                 row = tuple(row)
                 # print(row)
                 sql = "INSERT INTO relation VALUES (%d, %d, %d, '%s','%s','%s', %d, %d)" % row
-                print(sql)
+                # print(sql)
                 db_server.write_sql(sql)
 
             # 每一句实体识别
@@ -356,7 +381,7 @@ def csv_to_sql(data,db_server,db_server_sw):
                 if value not in entityType.keys():
                     en_id += 1
                     sql = "INSERT INTO entityType VALUES (%d, '%s')" % (en_id, value)
-                    print(sql)
+                    # print(sql)
                     db_server.write_sql(sql)
                     entity['entityTypeId'] = en_id
                 else:
@@ -368,7 +393,7 @@ def csv_to_sql(data,db_server,db_server_sw):
                 row = tuple(row)
                 # print(row)
                 sql = "INSERT INTO entity VALUES (%d, %d, %d, '%s', %d)" % row
-                print(sql)
+                # print(sql)
                 db_server.write_sql(sql)
 
     db_server.close()
@@ -379,17 +404,20 @@ if __name__ == '__main__':
     with open('db_info.json', 'r', encoding='utf-8') as f:
         db = json.load(f)
     db_info = db['ArxivSearch_bak_1203']
-    db_info = db['ArxivSearch_New']
+    # db_info = db['ArxivSearch_New']
     db_server = pySql(ip=db_info['ip'], user=db_info['user'], pwd=db_info['pwd'], db=db_info['db'])
 
     db_info_sw = db['arxiv_physics_article']
     db_server_sw = pySql(ip=db_info_sw['ip'], user=db_info_sw['user'], pwd=db_info_sw['pwd'], db=db_info_sw['db'])
     ## 读取csv
-    data = pd.read_csv(r'D:\UCAS\Phd\Projects\201903arxiv物理学领域语义标注应用\数据库写入\arxiv_2020_01_04.csv')
+    data = pd.read_csv(r'arxiv_2020_01_04.csv',float_precision='round_trip')
 
-    data = data[:5]
+    data = data[9:]
+    # print(data.iloc[1]['csoaid'])
 
+    t0 = time.time()
     csv_to_sql(data,db_server,db_server_sw)
+    print(time.time()-t0)
 
 
 

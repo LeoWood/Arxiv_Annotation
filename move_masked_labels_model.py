@@ -6,7 +6,7 @@ from bert_base.client import BertClient
 import time
 import spacy
 import socket
-from .move_masked_sentence_model import predict_move_masked_sentence_model
+from move_masked_sentence_model import predict_move_masked_sentence_model
 
 
 nlp = spacy.load("en_core_sci_sm")
@@ -18,8 +18,11 @@ def msm_results(text):
     if not results:
         return 0,0
     sentences = [str(sen) for sen in nlp(text).sents]
+    ##　小于４句话，直接返回结果
+    if len(sentences) < 4:
+        return results,sentences
     # print(results)
-    print('msm用时：', time.time() - t1)
+    # print('msm用时：', time.time() - t1)
     # t1 = time.time()
 
     cla = {'0': 'Purpose', '1': 'Methods', '2': 'Results', '3': 'Conclusions', '4': 'Background'}
@@ -58,7 +61,7 @@ def msm_results(text):
         masked_label_abs = ''
         for j in range(len(sentences)):
             masked_label_abs += new_sens[j]  # 得到每一句的mask_label表示
-        print(masked_label_abs)
+        # print(masked_label_abs)
         # guid = 'test-' + str(k)
         predict_examples.append(masked_label_abs)
         k += 1
@@ -83,6 +86,16 @@ def predict_move_masked_labels_model(text):
     predict_examples,sentences = msm_results(text)
     if not sentences:
         return 0,0
+
+    ## 小于4句话，直接用msm结果
+    if len(sentences)<4:
+        i = 0
+        labels = []
+        for a in predict_examples:
+            labels.append(a.index(max(a)))
+            i += 1
+        return labels,sentences
+
 
     with BertClient(port=5720,port_out=5721,show_server_config=False, check_version=False, check_length=False, mode='CLASS') as bc:
         results = bc.encode(predict_examples)

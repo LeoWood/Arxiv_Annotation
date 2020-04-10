@@ -23,7 +23,7 @@ def predict_def(sentences):
     else:
 
         with BertClient(port=5610,port_out=5611,show_server_config=False, check_version=False, check_length=False, mode='CLASS') as bc:
-            result = bc.encode(sentences)[0]['score']
+            result = bc.encode(sentences)
 
         k = 0
         labels = []
