@@ -133,6 +133,19 @@ def csv_to_sql(data,db_server,db_server_sw):
 
     max_num = max([len(lines.split(' ')) for lines in a])
 
+    # 获取实体识别类型映射
+    entityType = {}
+    sql = "SELECT * FROM entityType"
+    df = db_server.read_sql(sql)
+    for k in range(len(df)):
+        if df.iloc[k]['deleteTag'] != 1:
+            entityType[str(df.iloc[k]['typeName'])] = df.iloc[k]['entityTypeId']
+    print(entityType)
+    print(len(entityType))
+    exit()
+
+
+
     for i in tqdm(range(len(data))):
         this_abst = data.iloc[i]['abstracts']
         ## 插入paper表
@@ -357,17 +370,6 @@ def csv_to_sql(data,db_server,db_server_sw):
             sen = sen.replace('\\', ' ').replace('$', ' ').replace('~', ' ')
             ano_dict = annotation_ner(sen)
 
-            # 获取实体识别类型映射
-            entityType = {}
-            sql = "SELECT * FROM entityType"
-            df = db_server.read_sql(sql)
-            for k in range(len(df)):
-                entityType[str(df.iloc[k]['typeName'])] = df.iloc[k]['entityTypeId']
-            max_id = max(df['entityTypeId'].tolist())
-            en_id = max_id
-            # print(entityType)
-            # exit()
-
             for key, value in ano_dict.items():
 
                 entity = {}
@@ -378,23 +380,17 @@ def csv_to_sql(data,db_server,db_server_sw):
                 entity['name'] = key.replace("'", "''")
 
                 # 更新类型
-                if value not in entityType.keys():
-                    en_id += 1
-                    sql = "INSERT INTO entityType VALUES (%d, '%s')" % (en_id, value)
-                    # print(sql)
-                    db_server.write_sql(sql)
-                    entity['entityTypeId'] = en_id
-                else:
+                if value in entityType.keys():
                     entity['entityTypeId'] = entityType[value]
 
-                row = []
-                for field in ['entityId', 'sentenceId', 'paperId', 'name', 'entityTypeId']:
-                    row.append(entity[field])
-                row = tuple(row)
-                # print(row)
-                sql = "INSERT INTO entity VALUES (%d, %d, %d, '%s', %d)" % row
-                # print(sql)
-                db_server.write_sql(sql)
+                    row = []
+                    for field in ['entityId', 'sentenceId', 'paperId', 'name', 'entityTypeId']:
+                        row.append(entity[field])
+                    row = tuple(row)
+                    # print(row)
+                    sql = "INSERT INTO entity VALUES (%d, %d, %d, '%s', %d)" % row
+                    # print(sql)
+                    db_server.write_sql(sql)
 
     db_server.close()
 
