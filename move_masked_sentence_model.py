@@ -22,7 +22,7 @@ def predict_sentences(sentences):
     sk.close()
 
     if not flag:
-        print('server not available')
+        print('mask sentence server not available')
         return 0, 0
     else:
 

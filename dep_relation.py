@@ -38,4 +38,9 @@ def dep_relation(terms, txt, nlp):
     return deps
 
 if __name__ == '__main__':
-    pass
+    import spacy
+    nlp = spacy.load("en_core_sci_sm")
+    nlp = spacy.load("en_core_web_sm")
+    text='The Sr~{\sc i} 4607~\AA\ spectral line shows one of the strongest scattering polarization signals in the visible solar spectrum.'
+    terms = ['polarization', 'solar', 'scattering', 'spectrum', 'signals']
+    print(dep_relation(terms,text,nlp))

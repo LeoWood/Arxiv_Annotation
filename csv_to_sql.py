@@ -140,9 +140,9 @@ def csv_to_sql(data,db_server,db_server_sw):
     for k in range(len(df)):
         if df.iloc[k]['deleteTag'] != 1:
             entityType[str(df.iloc[k]['typeName'])] = df.iloc[k]['entityTypeId']
-    print(entityType)
-    print(len(entityType))
-    exit()
+    # print(entityType)
+    # print(len(entityType))
+    # exit()
 
 
 
@@ -379,7 +379,6 @@ def csv_to_sql(data,db_server,db_server_sw):
                 entity['paperId'] = paperId
                 entity['name'] = key.replace("'", "''")
 
-                # 更新类型
                 if value in entityType.keys():
                     entity['entityTypeId'] = entityType[value]
 
@@ -408,7 +407,7 @@ if __name__ == '__main__':
     ## 读取csv
     data = pd.read_csv(r'arxiv_2020_01_04.csv',float_precision='round_trip')
 
-    data = data[9:]
+    data = data[13601:]
     # print(data.iloc[1]['csoaid'])
 
     t0 = time.time()
