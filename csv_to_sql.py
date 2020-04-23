@@ -405,9 +405,9 @@ if __name__ == '__main__':
     db_info_sw = db['arxiv_physics_article']
     db_server_sw = pySql(ip=db_info_sw['ip'], user=db_info_sw['user'], pwd=db_info_sw['pwd'], db=db_info_sw['db'])
     ## 读取csv
-    data = pd.read_csv(r'arxiv_2020_01_04.csv',float_precision='round_trip')
+    data = pd.read_csv(r'arxiv_2019.csv',float_precision='round_trip')
 
-    data = data[13601:]
+    # data = data[13601:]
     # print(data.iloc[1]['csoaid'])
 
     t0 = time.time()
