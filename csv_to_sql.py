@@ -407,7 +407,7 @@ if __name__ == '__main__':
     ## 读取csv
     data = pd.read_csv(r'arxiv_2019.csv',float_precision='round_trip')
 
-    # data = data[13601:]
+    data = data[4919:]
     # print(data.iloc[1]['csoaid'])
 
     t0 = time.time()
