@@ -407,7 +407,7 @@ if __name__ == '__main__':
     ## 读取csv
     data = pd.read_csv(r'arxiv_2019.csv',float_precision='round_trip')
 
-    data = data[4919:]
+    data = data[12036:] # 删掉那篇的行数-2
     # print(data.iloc[1]['csoaid'])
 
     t0 = time.time()

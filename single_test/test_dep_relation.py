@@ -65,10 +65,13 @@ if __name__ == '__main__':
     while True:
         text = input()
         for sen in nlp(text).sents:
+            print('Sentence:')
             print(sen)
             sen = str(sen)
             terms = set(max_match(sen, term_dict, max_num))
             deps = dep_relation(terms, sen, nlp)
+            print('Terms:')
             print(terms)
+            print('Relations:')
             print(deps)
             print()
