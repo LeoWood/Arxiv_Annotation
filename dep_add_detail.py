@@ -99,7 +99,7 @@ if __name__ == '__main__':
     df = db_server.read_sql(sql)
     relationId = df.iloc[0]['relationId']
 
-    for i in tqdm(range(1,paperId)):
+    for i in tqdm(range(2,76444)):
         ## 删掉17,18,20三种关系
         # sql = "delete from relation where paperId={} and relationTypeId in (17,18,20)".format(i)
         # db_server.write_sql(sql)
@@ -143,9 +143,5 @@ if __name__ == '__main__':
                     sql = "INSERT INTO relation VALUES (%d, %d, %d, '%s','%s','%s', %d, %d)" % row
                     # print(sql)
                     db_server.write_sql(sql)
-
-        db_server.close()
-        exit()
-
 
     db_server.close()
