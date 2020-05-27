@@ -9,6 +9,8 @@
 '''
 
 from tqdm import tqdm
+from pySql import pySql
+import json
 from dep_relation import dep_relation
 import spacy
 nlp = spacy.load("en_core_sci_sm")
