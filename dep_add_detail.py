@@ -61,7 +61,7 @@ if __name__ == '__main__':
     # 获取本地术语表
     a = []
     term_dict = {}
-    with open('../keywords_all(new)(modified).txt', 'r', encoding='utf-8') as f:
+    with open('keywords_all(new)(modified).txt', 'r', encoding='utf-8') as f:
         for line in f.readlines():
             line = line.strip()
             a.append(line)
