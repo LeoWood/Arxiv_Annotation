@@ -313,6 +313,7 @@ def csv_to_sql(data,db_server,db_server_sw):
             # 依存关系
             deps = dep_relation(terms, sen, nlp)
             for dep in deps:
+                ## 合并的关系类型
                 if dep[2] in dep_dict.keys():
                     relation = {}
                     relationId += 1
@@ -330,6 +331,36 @@ def csv_to_sql(data,db_server,db_server_sw):
                         relation['conj'] = ''
                         relation['termSuf'] = dep[0].replace("'", "''")
                         relation['relationTypeId'] = relationType[dep_dict[dep[2]]]
+                        relation['isSemantic'] = 0
+
+                    row = []
+                    for field in ['relationId', 'sentenceId', 'paperId', 'termPre', 'conj', 'termSuf',
+                                  'relationTypeId', 'isSemantic']:
+                        row.append(relation[field])
+                    row = tuple(row)
+                    # print(row)
+                    sql = "INSERT INTO relation VALUES (%d, %d, %d, '%s','%s','%s', %d, %d)" % row
+                    # print(sql)
+                    db_server.write_sql(sql)
+
+                ## 具体的关系类型
+                if dep[2] in relationType.keys():
+                    relation = {}
+                    relationId += 1
+                    relation['relationId'] = relationId
+                    relation['sentenceId'] = sen_id
+                    relation['paperId'] = i
+                    if dep[2] == 'conj':
+                        relation['termPre'] = dep[1].replace("'", "''")
+                        relation['conj'] = dep[3].replace("'", "''")
+                        relation['termSuf'] = dep[0].replace("'", "''")
+                        relation['relationTypeId'] = relationType[dep[2]]
+                        relation['isSemantic'] = 0
+                    else:
+                        relation['termPre'] = dep[1].replace("'", "''")
+                        relation['conj'] = ''
+                        relation['termSuf'] = dep[0].replace("'", "''")
+                        relation['relationTypeId'] = relationType[dep[2]]
                         relation['isSemantic'] = 0
 
                     row = []
@@ -407,7 +438,7 @@ if __name__ == '__main__':
     ## 读取csv
     data = pd.read_csv(r'arxiv_2019.csv',float_precision='round_trip')
 
-    data = data[12036:] # 删掉那篇的行数-2
+    data = data[39700:] # 删掉那篇的行数-2
     # print(data.iloc[1]['csoaid'])
 
     t0 = time.time()
