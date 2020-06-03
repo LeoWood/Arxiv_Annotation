@@ -348,7 +348,7 @@ def csv_to_sql(data,db_server,db_server_sw):
                     relation = {}
                     relationId += 1
                     relation['relationId'] = relationId
-                    relation['sentenceId'] = sen_id
+                    relation['sentenceId'] = sentenceId
                     relation['paperId'] = i
                     if dep[2] == 'conj':
                         relation['termPre'] = dep[1].replace("'", "''")
